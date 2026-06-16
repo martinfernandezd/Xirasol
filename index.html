@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xirasol — Sistema de Gestión</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --border: #e5e5e5;
+    --text: #111111;
+    --muted: #888888;
+    --accent: #111111;
+    --accent-hover: #333333;
+    --danger: #dc2626;
+    --success: #16a34a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: #0f0f0f;
+  }
+  .login-card {
+    background: white; border-radius: 20px; padding: 48px 40px;
+    width: 100%; max-width: 400px; box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  }
+  .login-logo { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+  .login-subtitle { font-size: 11px; font-weight: 500; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 36px; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color 0.2s; background: white;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+
+  .btn-primary {
+    width: 100%; padding: 14px; background: var(--accent); color: white;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    padding: 10px 20px; background: white; color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px;
+    font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: #f5f5f5; }
+
+  .btn-danger {
+    padding: 8px 14px; background: #fee2e2; color: var(--danger); border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: background 0.2s;
+  }
+  .btn-danger:hover { background: #fecaca; }
+
+  .btn-sm {
+    padding: 6px 12px; background: #f0f0f0; color: var(--text); border: none;
+    border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: background 0.2s;
+  }
+  .btn-sm:hover { background: #e0e0e0; }
+
+  .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; margin-bottom: 16px; }
+  .alert-error { background: #fee2e2; color: var(--danger); }
+  .alert-success { background: #dcfce7; color: var(--success); }
+
+  /* APP */
+  #app-screen { display: none; min-height: 100vh; background: #f4f4f4; }
+
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+    background: #111; color: white; display: flex; flex-direction: column;
+    padding: 24px 0; z-index: 100;
+  }
+  .sidebar-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; padding: 0 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+  .sidebar-user { padding: 0 20px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+  .avatar { width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: #888; }
+  .nav-section-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #555; padding: 8px 24px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: #aaa; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; }
+  .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav-item.active { color: white; background: rgba(255,255,255,0.08); border-left-color: white; }
+  .nav-item .icon { font-size: 16px; }
+  .nav-admin { display: none; }
+
+  .sidebar-bottom { margin-top: auto; padding: 16px 16px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+  .btn-logout { width: 100%; padding: 10px; background: transparent; color: #888; border: 1px solid #333; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-logout:hover { color: white; border-color: #555; }
+
+  .main { margin-left: 220px; padding: 32px; min-height: 100vh; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 700; }
+  .page-date { font-size: 13px; color: var(--muted); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: white; border-radius: 14px; padding: 24px; border: 1px solid var(--border); }
+  .stat-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .content-card { background: white; border-radius: 14px; padding: 28px; border: 1px solid var(--border); margin-bottom: 20px; }
+  .content-card h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .content-card .card-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-field-readonly { padding: 12px 16px; background: #f8f8f8; border: 1.5px dashed var(--border); border-radius: 10px; font-size: 14px; color: var(--muted); }
+  .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); border-bottom: 1.5px solid var(--border); }
+  tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td { padding: 12px 14px; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f0f0f0; color: #555; }
+  .badge-E { background: #dbeafe; color: #1d4ed8; }
+  .badge-A { background: #dcfce7; color: #15803d; }
+  .badge-B { background: #fef9c3; color: #a16207; }
+  .badge-C { background: #fce7f3; color: #9d174d; }
+  .badge-admin { background: #111; color: white; }
+  .badge-user { background: #f0f0f0; color: #555; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; padding: 32px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .modal .modal-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+
+  #toast { position: fixed; bottom: 28px; right: 28px; background: #111; color: white; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 9999; display: none; }
+
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; }
+    .sidebar-logo, .sidebar-user-info, .nav-section-label, .nav-item span { display: none; }
+    .main { margin-left: 60px; padding: 20px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">xirasol</div>
+    <div class="login-subtitle">Sistema de Gestión</div>
+    <div id="login-alert"></div>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="tu@correo.com">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-primary" onclick="login()">Ingresar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <nav class="sidebar">
+    <div class="sidebar-logo">xirasol</div>
+    <div class="sidebar-user">
+      <div class="avatar" id="avatar-letter">A</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Usuario</div>
+        <div class="sidebar-user-role" id="sidebar-role">Operador</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Principal</div>
+    <div class="nav-item active" onclick="showPage('inicio')">
+      <span class="icon">🏠</span><span>Inicio</span>
+    </div>
+
+    <div class="nav-section-label">Operaciones</div>
+    <div class="nav-item" onclick="showPage('registro')">
+      <span class="icon">📦</span><span>Registro Fardos</span>
+    </div>
+    <div class="nav-item" onclick="showPage('historial')">
+      <span class="icon">📋</span><span>Historial Fardos</span>
+    </div>
+
+    <div class="nav-section-label nav-admin">Administración</div>
+    <div class="nav-item nav-admin" onclick="showPage('usuarios')">
+      <span class="icon">👥</span><span>Usuarios</span>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="btn-logout" onclick="logout()">↩ Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Inicio</div>
+      <div class="page-date" id="topbar-date"></div>
+    </div>
+
+    <!-- INICIO -->
+    <div class="page active" id="page-inicio">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Fardos</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Peso Total</div>
+          <div class="stat-value" id="stat-peso">—</div>
+          <div class="stat-sub">kilogramos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Últimos 7 días</div>
+          <div class="stat-value" id="stat-recientes">—</div>
+          <div class="stat-sub">fardos ingresados</div>
+        </div>
+      </div>
+      <div class="content-card">
+        <h2>Últimos registros</h2>
+        <p class="card-desc">Los 5 fardos más recientes</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>N° Fardo</th><th>Tipo Lana</th><th>Peso (kg)</th><th>Fecha</th></tr></thead>
+            <tbody id="inicio-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div class="page" id="page-registro">
+      <div class="content-card">
+        <h2>Nuevo Fardo</h2>
+        <p class="card-desc">Ingresa los datos del nuevo fardo</p>
+        <div id="registro-alert"></div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Número de Fardo *</label>
+            <input type="text" id="f-numero" placeholder="Ej: F-00126">
+          </div>
+          <div class="form-group">
+            <label>Tipo de Lana *</label>
+            <select id="f-tipo">
+              <option value="">Seleccionar...</option>
+              <option value="E">E</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Peso (kg) *</label>
+            <input type="number" id="f-peso" placeholder="Ej: 180" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <input type="text" id="f-obs" placeholder="Notas opcionales...">
+          </div>
+          <div class="form-group">
+            <label>Fecha de Ingreso</label>
+            <div class="form-field-readonly" id="f-fecha"></div>
+          </div>
+          <div class="form-group">
+            <label>Ingresado por</label>
+            <div class="form-field-readonly" id="f-usuario"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" onclick="limpiarForm()">Limpiar</button>
+          <button class="btn-primary" style="width:auto;padding:12px 28px" onclick="guardarFardo()">💾 Guardar Fardo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="page" id="page-historial">
+      <div class="content-card">
+        <h2>Historial de Fardos</h2>
+        <p class="card-desc">Todos los fardos registrados</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>N° Fardo</th><th>Tipo</th><th>Peso (kg)</th><th>Observaciones</th><th>Ingresado por</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="historial-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USUARIOS (solo admin) -->
+    <div class="page" id="page-usuarios">
+      <div class="content-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <h2>Gestión de Usuarios</h2>
+          <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
+        </div>
+        <p class="card-desc">Crea y administra quién puede acceder al sistema</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Creado</th><th>Acción</th></tr></thead>
+            <tbody id="usuarios-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <h3>Nuevo Usuario</h3>
+    <p class="modal-desc">El usuario recibirá acceso inmediato con estas credenciales</p>
+    <div id="modal-alert"></div>
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="nu-nombre" placeholder="Nombre del usuario">
+    </div>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="nu-email" placeholder="correo@ejemplo.com">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="nu-password" placeholder="Mínimo 6 caracteres">
+    </div>
+    <div class="form-group">
+      <label>Rol</label>
+      <select id="nu-rol">
+        <option value="operador">Operador</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" style="width:auto;padding:12px 24px" onclick="crearUsuario()">Crear Usuario</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://cqkgescjdyciwrhllhwi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxa2dlc2NqZHljaXdyaGxsaHdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjU3NDAsImV4cCI6MjA5NzIwMTc0MH0.c920wGKf9j8yELNy7ivNFCYPom3CPwyF4uy_nmELbF0';
+
+// TU CORREO DE ADMINISTRADOR — cámbialo por el tuyo
+const ADMIN_EMAIL = 'martinfernandez@xirasol.cl';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentUserName = '';
+let isAdmin = false;
+
+// ─── INIT ───
+window.onload = async () => {
+  updateDate();
+  const { data: { session } } = await db.auth.getSession();
+  if (session) { currentUser = session.user; await initUser(); showApp(); }
+
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') { currentUser = session.user; await initUser(); showApp(); }
+    else if (event === 'SIGNED_OUT') { currentUser = null; isAdmin = false; showLogin(); }
+  });
+};
+
+function updateDate() {
+  const now = new Date();
+  document.getElementById('topbar-date').textContent = now.toLocaleDateString('es-CL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+async function initUser() {
+  const meta = currentUser.user_metadata;
+  currentUserName = meta?.full_name || meta?.name || currentUser.email.split('@')[0];
+  isAdmin = currentUser.email === ADMIN_EMAIL || meta?.role === 'admin';
+
+  document.getElementById('sidebar-name').textContent = currentUserName;
+  document.getElementById('avatar-letter').textContent = currentUserName[0].toUpperCase();
+  document.getElementById('sidebar-role').textContent = isAdmin ? 'Administrador' : 'Operador';
+  document.getElementById('f-usuario').textContent = currentUserName;
+
+  // Mostrar menú admin solo si es admin
+  document.querySelectorAll('.nav-admin').forEach(el => {
+    el.style.display = isAdmin ? 'flex' : 'none';
+  });
+}
+
+// ─── AUTH ───
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAlert('login-alert', 'Completa todos los campos.', 'error');
+
+  const btn = document.querySelector('#login-screen .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Ingresando...';
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  btn.disabled = false;
+  btn.textContent = 'Ingresar';
+  if (error) showAlert('login-alert', 'Correo o contraseña incorrectos.', 'error');
+}
+
+async function logout() {
+  await db.auth.signOut();
+}
+
+// ─── NAVEGACIÓN ───
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  showPage('inicio');
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+function showPage(page) {
+  if (page === 'usuarios' && !isAdmin) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  const titles = { inicio:'Inicio', registro:'Registro de Fardos', historial:'Historial Fardos', usuarios:'Gestión de Usuarios' };
+  document.getElementById('page-title').textContent = titles[page];
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const navMap = { inicio:0, registro:1, historial:2, usuarios:3 };
+  navItems[navMap[page]]?.classList.add('active');
+
+  if (page === 'inicio') loadInicio();
+  if (page === 'historial') loadHistorial();
+  if (page === 'usuarios') loadUsuarios();
+  if (page === 'registro') {
+    document.getElementById('f-fecha').textContent = new Date().toLocaleString('es-CL');
+    document.getElementById('f-usuario').textContent = currentUserName;
+  }
+}
+
+// ─── FARDOS ───
+async function guardarFardo() {
+  const numero = document.getElementById('f-numero').value.trim();
+  const tipo = document.getElementById('f-tipo').value;
+  const peso = parseFloat(document.getElementById('f-peso').value);
+  const obs = document.getElementById('f-obs').value.trim();
+  if (!numero || !tipo || !peso) return showAlert('registro-alert', 'Completa los campos obligatorios (*).', 'error');
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+  const { error } = await db.from('fardos').insert({
+    numero_fardo: numero, tipo_lana: tipo, peso_kg: peso,
+    observaciones: obs, usuario_id: currentUser.id, ingresado_por: currentUserName
+  });
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 Guardar Fardo';
+
+  if (error) {
+    showAlert('registro-alert', 'Error al guardar: ' + error.message, 'error');
+  } else {
+    limpiarForm();
+    showAlert('registro-alert', '✅ Fardo guardado correctamente.', 'success');
+    toast('Fardo guardado ✓');
+  }
+}
+
+function limpiarForm() {
+  ['f-numero','f-tipo','f-peso','f-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('registro-alert').innerHTML = '';
+}
+
+async function loadInicio() {
+  const query = isAdmin
+    ? db.from('fardos').select('*').order('fecha_ingreso', { ascending: false })
+    : db.from('fardos').select('*').eq('usuario_id', currentUser.id).order('fecha_ingreso', { ascending: false });
+
+  const { data } = await query;
+  if (!data) return;
+
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-peso').textContent = data.reduce((s,f) => s + parseFloat(f.peso_kg||0), 0).toLocaleString('es-CL');
+  const hace7 = new Date(); hace7.setDate(hace7.getDate()-7);
+  document.getElementById('stat-recientes').textContent = data.filter(f => new Date(f.fecha_ingreso) >= hace7).length;
+
+  const ultimos = data.slice(0,5);
+  document.getElementById('inicio-tabla').innerHTML = ultimos.length === 0
+    ? `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">📦</div><p>Sin registros aún</p></div></td></tr>`
+    : ultimos.map(f => `<tr>
+        <td><strong>${f.numero_fardo}</strong></td>
+        <td><span class="badge badge-${f.tipo_lana}">${f.tipo_lana}</span></td>
+        <td>${parseFloat(f.peso_kg).toLocaleString('es-CL')} kg</td>
+        <td>${new Date(f.fecha_ingreso).toLocaleDateString('es-CL')}</td>
+      </tr>`).join('');
+}
+
+async function loadHistorial() {
+  const tbody = document.getElementById('historial-tabla');
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#888">Cargando...</td></tr>`;
+
+  const query = isAdmin
+    ? db.from('fardos').select('*').order('fecha_ingreso', { ascending: false })
+    : db.from('fardos').select('*').eq('usuario_id', currentUser.id).order('fecha_ingreso', { ascending: false });
+
+  const { data } = await query;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📋</div><p>No hay fardos registrados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(f => `<tr>
+    <td><strong>${f.numero_fardo}</strong></td>
+    <td><span class="badge badge-${f.tipo_lana}">${f.tipo_lana}</span></td>
+    <td>${parseFloat(f.peso_kg).toLocaleString('es-CL')} kg</td>
+    <td>${f.observaciones||'—'}</td>
+    <td>${f.ingresado_por||'—'}</td>
+    <td>${new Date(f.fecha_ingreso).toLocaleDateString('es-CL')}</td>
+    <td>${isAdmin || f.usuario_id === currentUser.id ? `<button class="btn-danger" onclick="eliminarFardo('${f.id}')">Eliminar</button>` : '—'}</td>
+  </tr>`).join('');
+}
+
+async function eliminarFardo(id) {
+  if (!confirm('¿Eliminar este fardo?')) return;
+  const { error } = await db.from('fardos').delete().eq('id', id);
+  if (!error) { toast('Fardo eliminado'); loadHistorial(); }
+}
+
+// ─── USUARIOS (solo admin) ───
+async function loadUsuarios() {
+  const tbody = document.getElementById('usuarios-tabla');
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:#888">Cargando...</td></tr>`;
+
+  const { data, error } = await db.from('perfiles_usuarios').select('*').order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👥</div><p>No hay usuarios registrados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(u => `<tr>
+    <td><strong>${u.nombre}</strong></td>
+    <td>${u.email}</td>
+    <td><span class="badge badge-${u.rol}">${u.rol === 'admin' ? 'Admin' : 'Operador'}</span></td>
+    <td>${new Date(u.created_at).toLocaleDateString('es-CL')}</td>
+    <td><button class="btn-sm" onclick="resetPassword('${u.email}')">Reset contraseña</button></td>
+  </tr>`).join('');
+}
+
+function abrirModalUsuario() {
+  document.getElementById('modal-usuario').classList.add('open');
+  document.getElementById('modal-alert').innerHTML = '';
+  ['nu-nombre','nu-email','nu-password'].forEach(id => document.getElementById(id).value = '');
+}
+
+function cerrarModal() {
+  document.getElementById('modal-usuario').classList.remove('open');
+}
+
+async function crearUsuario() {
+  const nombre = document.getElementById('nu-nombre').value.trim();
+  const email = document.getElementById('nu-email').value.trim();
+  const password = document.getElementById('nu-password').value;
+  const rol = document.getElementById('nu-rol').value;
+
+  if (!nombre || !email || !password) return showAlert('modal-alert', 'Completa todos los campos.', 'error');
+  if (password.length < 6) return showAlert('modal-alert', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creando...';
+
+  // Crear usuario en Supabase Auth
+  const { data, error } = await db.auth.signUp({
+    email, password,
+    options: { data: { full_name: nombre, role: rol } }
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Crear Usuario';
+    return showAlert('modal-alert', 'Error: ' + error.message, 'error');
+  }
+
+  // Guardar en tabla perfiles_usuarios
+  await db.from('perfiles_usuarios').insert({
+    user_id: data.user.id,
+    nombre, email, rol
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Crear Usuario';
+  cerrarModal();
+  toast(`Usuario ${nombre} creado ✓`);
+  loadUsuarios();
+}
+
+async function resetPassword(email) {
+  const { error } = await db.auth.resetPasswordForEmail(email);
+  if (!error) toast('Email de reset enviado a ' + email);
+  else toast('Error al enviar reset');
+}
+
+// ─── UTILS ───
+function showAlert(id, msg, type) {
+  document.getElementById(id).innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>
